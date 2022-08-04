@@ -7,7 +7,7 @@ namespace DiscordBot
 {
     internal class DiscordToken
     {
-        private static string token = "OTk5MTY3NDYzNTI0NjYzMjk2.GRcNrY.f6EVz9eLwvB8tmibfOEzqNEX1ybTKPTq8VVu5s";
+        private static string token = "";
         public static string Token
         {
             get { return token; }
