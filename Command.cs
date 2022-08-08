@@ -10,15 +10,51 @@ namespace DiscordBot
     public class Command : BaseCommandModule
     {
         //数据库
-        SQLiteHelper db = new SQLiteHelper();
-        SQLiteCommand cmd = null;
+        public SQLiteHelper db = new SQLiteHelper();
+        public SQLiteCommand cmd = null;
+
+        //查询是否绑定
+        public Boolean SqlSeac(CommandContext ctx)
+        {
+            string userID = ctx.User.Id.ToString();
+            string sql = $"select count(*) from DiscordUserInfo where DiscordUserId = '{userID}'";
+            cmd = new SQLiteCommand(sql, db.Conn);
+            try
+            {
+                db.OpenConn();
+                //检查是否已经绑定
+                int dr = Convert.ToInt32(cmd.ExecuteScalar());
+                if (dr <= 0)
+                {
+                    //未绑定
+                    ctx.RespondAsync("你还没有绑定过，请输入\"!bind\"来绑定bot!");
+                    return false;
+                }
+                else
+                {
+                    //已经绑定
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return false;
+            }
+            finally
+            {
+                db.CloseConn();
+            }
+
+        }
 
         //测试
         [Command("test")]
         public async Task testCommand(CommandContext ctx)
         {
-            string userID = ctx.User.Id.ToString();
-            await ctx.RespondAsync("您的ID为"+userID);
+            bool sq = SqlSeac(ctx);
+            await ctx.RespondAsync(sq.ToString());
+
         }
 
         //绑定DiscordBotDB
@@ -66,33 +102,17 @@ namespace DiscordBot
 
         //早安
         [Command("早安")]
-        public async Task CmbCommand(CommandContext ctx)
+        public async Task MorningCommand(CommandContext ctx)
         {
-            //起床排名
-            int num = 0;
-            //性别
-            int gar = 0;
-            //晚安时间
-            int nightTime = 0;
-            //今日是否已经说过早安
-            bool isMorningOK = false;
-            //如果没有说过早安
-            if (!isMorningOK)
-            {
-                //如果晚安时间小于4小时
-                if(nightTime < 4)
-                {
-                    await ctx.RespondAsync("才睡了多久就早安啊——");
-                    return;
-                }
-                await ctx.RespondAsync($"早上好，您是今天第{num}个起床的{gar}");
-            }
-            //如果说过早安
-            else
-            {
-                await ctx.RespondAsync($"您已经说过早安了");
-            }
+            GoodMorningBot morningBot = new GoodMorningBot(ctx);
+            await ctx.RespondAsync(morningBot.Ret);
+        }
 
+        [Command("晚安")]
+        public async Task NightCommand(CommandContext ctx)
+        {
+            GoodNightBot nightBot = new GoodNightBot(ctx);
+            await ctx.RespondAsync(nightBot.Ret);
         }
 
         [Command("awsl")]

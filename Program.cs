@@ -4,6 +4,7 @@ using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
 using System.Data.SQLite;
+using System.Collections.Generic;
 
 namespace DiscordBot
 {
@@ -13,6 +14,7 @@ namespace DiscordBot
         static SQLiteCommand cmd;
         static void Main(string[] args)
         {
+            GoodClearBot goodClearBot = new GoodClearBot();
             try
             {
                 MainAsync().GetAwaiter().GetResult();
@@ -51,28 +53,46 @@ namespace DiscordBot
                     await e.Message.RespondAsync("当前时间为" + System.DateTime.Now.ToString("F"));
                 };
                 //随机数
-                if (e.Message.Content.ToLower() == "randomr")
+                if (e.Message.Content.ToLower() == "random")
                 {
                     await e.Message.RespondAsync("数字为:" + ran.Next(100));
+                    
                 };
-                if (e.Message.Content.ToLower() == "早安")
+                if (e.Message.Content.ToLower() == "list")
                 {
-                    string sql = "";
-                    cmd = new SQLiteCommand(sql, db.Conn);
-                    try
+                    var options = new List<DiscordSelectComponentOption>()
                     {
-                        db.OpenConn();
-                    }
-                    catch (Exception ex)
-                    {
-                        await e.Message.RespondAsync(ex.Message);
-                        return;
-                    }
-                    finally
-                    {
-                        db.CloseConn();
-                    }
-                    await e.Message.RespondAsync("数字为:" + ran.Next(100));
+                    new DiscordSelectComponentOption(
+                        "标签1",
+                        "label_no_desc"),
+
+                    new DiscordSelectComponentOption(
+                        "带备注的标签",
+                        "label_with_desc",
+                        "这是备注!"),
+
+                    new DiscordSelectComponentOption(
+                        "带备注和表情的标签",
+                        "label_with_desc_emoji",
+                        "这也是备注!",
+                        emoji: new DiscordComponentEmoji(854260064906117121)),
+
+                    new DiscordSelectComponentOption(
+                        "带备注，表情的默认选中的标签",
+                        "label_with_desc_emoji_default",
+                        "我是默认选中的!",
+                        isDefault: true,
+                        new DiscordComponentEmoji(854260064906117121))
+                    };
+
+                    // Make the dropdown
+                    var dropdown = new DiscordSelectComponent("dropdown", null, options, false, 1, 2);
+
+                    var builder = new DiscordMessageBuilder()
+                    .WithContent("我会在标签前发出来")
+                    .AddComponents(dropdown);
+
+                    await builder.SendAsync(e.Message.Channel);
                 };
             };
 
